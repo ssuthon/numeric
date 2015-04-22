@@ -1,0 +1,26 @@
+<html ng-app="gameApp">
+<head>
+	<title>Numeric Game</title>
+	<script type="text/javascript" src="lib/angular/angular.min.js"></script>
+	<script type="text/javascript" src="lib/angular-socket-io/socket.min.js"></script>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+</head>
+<body ng-controller="MainCtrl">
+	<input ng-model="playerName" ng-disable="joined">
+	<button ng-click="join" ng-disable="joined">Join</button>
+</body>
+<script type="text/javascript">
+	angular.module("gameApp", ['btford.socket-io'])
+	.factory('io', function (socketFactory) {
+  		return socketFactory();
+	})
+	.controller('MainCtrl', function($scope, io){
+		$scope.joined = false;
+
+		$scope.join = function(){
+			io.emit('game:join', {playerName: $scope.playerName});
+			$scope.joined = true;
+		}
+	});
+</script>
+</html>

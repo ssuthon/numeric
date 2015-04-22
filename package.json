@@ -1,0 +1,25 @@
+{
+  "name": "numeric",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/ssuthon/numeric"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ssuthon/numeric/issues"
+  },
+  "homepage": "https://github.com/ssuthon/numeric",
+  "dependencies": {
+    "express": "^4.12.3",
+    "socket.io": "^1.3.5",
+    "underscore": "^1.8.3"
+  }
+}
