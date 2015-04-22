@@ -10,7 +10,7 @@
 	<button ng-click="stop()">Stop</button>
 	<button ng-click="reset()">Reset</button>
 	<table>
-		<tr ng-repeat="player in players">
+		<tr ng-repeat="player in players | orderBy:score">
 			<td>{{player.name}}</td>
 			<td>{{player.score}}</td>
 		</tr>
