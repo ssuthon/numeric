@@ -5,6 +5,8 @@ var io = require('socket.io')(server);
 var _ = require('underscore');
 
 var players = {};
+var markedToStop = false;
+var seq = 0;
 
 app.use(express.static('public'));
 
@@ -13,17 +15,27 @@ app.get('/', function(req, res){
 });
 
 app.get('/start', function(req, res){
+	console.log('started.');
+	seq = 0;
+	markedToStop = false;
+	_.each(players, function(v, k){ players[k] = 0; });
 	nextTurn();
-	res.send({result: 'ok'})
+	res.send({result: 'ok'});
 });
 
 app.get('/stop', function(req, res){
-	io.to('game').emit('client:stop');
-	res.send({result: 'ok'})
+	markedToStop = true;
+	res.send({result: 'ok'});
 });
 
+app.get('/reset', function(req, res){
+	io.sockets.emit('client:reset');	
+	players = {};
+	res.send({result: 'ok'});
+})
+
 app.get('/players', function(req, res){
-	var _p;	//format players
+	var _p = _.map(players, function(v, k){ return {name: k, score: v}});
 	res.send(_p);
 })
 
@@ -38,8 +50,16 @@ io.on('connection', function (socket) {
 	})
 
 	socket.on('game:answer', function(data){
-		if(currentAnswer != -1 && data.answer == currentAnswer && players[playerName]){
+		console.log(playerName +" sent " + JSON.stringify(data));
+		if(currentAnswer != -1 && data.answer == currentAnswer && players[playerName] !== 'undefined'){
 			players[playerName] ++;
+			io.sockets.emit('console:player');
+
+			if(!markedToStop){				
+				nextTurn();
+			}else{
+				io.to('game').emit('client:stop');
+			}
 		}
 	})
 });
@@ -47,10 +67,12 @@ io.on('connection', function (socket) {
 var currentAnswer = -1;
 
 function nextTurn(){
+	seq++;
 	var a = qRand();
 	var b = qRand();
 	currentAnswer = a + b;
-	io.to('game').emit('client:question', {a: a, b: b});
+	console.log("currentAnswer = " + currentAnswer);
+	io.to('game').emit('client:question', {a: a, b: b, seq: seq});
 }
 
 function qRand(){

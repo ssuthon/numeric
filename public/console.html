@@ -8,6 +8,7 @@
 <body ng-controller="MainCtrl">
 	<button ng-click="start()">Start</button>
 	<button ng-click="stop()">Stop</button>
+	<button ng-click="reset()">Reset</button>
 	<table>
 		<tr ng-repeat="player in players">
 			<td>{{player.name}}</td>
@@ -21,12 +22,26 @@
   		return socketFactory();
 	})
 	.controller('MainCtrl', function($scope, $http, io){
+		$scope.start = function(){
+			$http.get('/start');
+			updatePlayers();
+		}
+
+		$scope.stop = function(){
+			$http.get('/stop');
+		}
+
+		$scope.reset = function(){
+			$http.get('/reset');
+			$scope.players = [];
+		}
+
 		io.on('console:player', function(){
 			updatePlayers();
 		})
 
 		function updatePlayers(){
-			$http.get('/players', function(players){
+			$http.get('/players').success(function(players){
 				$scope.players = players;
 			})
 		}

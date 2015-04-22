@@ -6,21 +6,52 @@
 	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 </head>
 <body ng-controller="MainCtrl">
-	<input ng-model="playerName" ng-disable="joined">
-	<button ng-click="join" ng-disable="joined">Join</button>
+	<input ng-model="playerName" ng-disabled="joined">
+	<button ng-click="join()" ng-disabled="joined || (playerName.length < 3)">Join</button>
+
+	<form ng-submit="answer()" ng-show="joined && q.seq > 0">
+		Q.{{q.seq}}: {{q.a}} + {{q.b}} = 
+		<input type="number" ng-model="ans" ng-focus="joined" id="answer_text">
+	</form>
 </body>
 <script type="text/javascript">
+	var beep = new Audio("/media/beep.wav"); 
 	angular.module("gameApp", ['btford.socket-io'])
 	.factory('io', function (socketFactory) {
   		return socketFactory();
 	})
 	.controller('MainCtrl', function($scope, io){
-		$scope.joined = false;
+		function init(){
+			$scope.joined = false;
+			$scope.playerName = "";
+			$scope.ans = null;
+			$scope.q = null;
+		}
+
+		init();
 
 		$scope.join = function(){
 			io.emit('game:join', {playerName: $scope.playerName});
 			$scope.joined = true;
 		}
+
+		$scope.answer = function(){
+			if($scope.ans){				
+				io.emit('game:answer', {answer: $scope.ans});
+				$scope.ans = null;
+			}
+		}
+
+		io.on('client:question', function(data){
+			beep.play();
+			$scope.q = data;	
+		})
+		io.on('client:stop', function(data){
+			$scope.q = null;			
+		})
+		io.on('client:reset', function(data){
+			init();			
+		})
 	});
 </script>
 </html>
